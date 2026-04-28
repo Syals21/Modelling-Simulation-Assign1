@@ -1,3 +1,4 @@
+# STTHK2133 MODELING & SIMULATION A252 – Individual Assignment #1 
 # 🎓 Discrete Choice Model: Programme Selection Simulator
 
 A web-based tool that predicts academic programme selection using **multinomial logit modeling** and discrete choice theory.
