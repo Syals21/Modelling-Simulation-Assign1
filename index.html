@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programme Selection Simulator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0;
+            padding: 30px 20px;
+            color: #fff;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        h2 { 
+            color: #f8fbff;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            font-weight: 700;
+            line-height: 1.1;
+        }
+        
+        h3 {
+            color: #f5f8ff;
+            font-size: 1.35em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .mode-selector { 
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .mode-selector-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        
+        .mode-selector:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+        }
+        
+        .mode-selector label {
+            color: #f2f6ff;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 0;
+            font-size: 1.2rem;
+            line-height: 1.3;
+            letter-spacing: 0;
+        }
+        
+        select { 
+            padding: 12px 15px;
+            font-size: 1.05rem;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            color: #fdfefe;
+            font-weight: 600;
+            line-height: 1.4;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        select:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        select:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.24);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+        
+        select option {
+            background: #f7faff;
+            color: #17325c;
+            padding: 10px;
+            font-weight: 600;
+        }
+        
+        .container { 
+            display: flex; 
+            gap: 25px; 
+            flex-wrap: wrap;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .panel { 
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            border-radius: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            flex: 1;
+            min-width: 350px;
+            transition: all 0.3s ease;
+            overflow-x: auto;
+        }
+        
+        .panel:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.35);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            transform: translateY(-5px);
+        }
+        
+        .chart-panel { 
+            flex: 2; 
+            min-width: 400px;
+        }
+        
+        /* Table Styling */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 15px;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+        }
+        
+        th, td { 
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.52);
+        }
+        
+        th { 
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.4) 0%, rgba(118, 75, 162, 0.4) 100%);
+            backdrop-filter: blur(5px);
+            color: #fff;
+            font-weight: 700;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.7);
+            white-space: nowrap;
+        }
+        
+        td:first-child { 
+            text-align: left;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            min-width: 90px;
+            white-space: nowrap;
+        }
+        
+        input[type="number"] { 
+            width: 45px;
+            padding: 6px 4px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            font-weight: 600;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+        
+        input[type="number"]:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+        
+        input[type="number"]:disabled { 
+            background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        /* Slider Styling */
+        .slider-group { 
+            margin-bottom: 20px;
+        }
+        
+        .slider-group label { 
+            display: flex; 
+            justify-content: space-between; 
+            font-weight: 600;
+            font-size: 0.95rem; 
+            margin-bottom: 8px;
+            color: #f3f7ff;
+        }
+        
+        input[type=range] { 
+            width: 100%; 
+            height: 6px;
+            cursor: pointer;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        
+        input[type=range]:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.2s ease;
+        }
+        
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6);
+        }
+        
+        input[type=range]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.2s ease;
+        }
+        
+        input[type=range]::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6);
+        }
+        
+        input[type=range]:disabled { 
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        hr {
+            border: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 25px 0;
+        }
+
+        @media (max-width: 768px) {
+            h2 {
+                font-size: 2rem;
+            }
+
+            h3 {
+                font-size: 1.2rem;
+            }
+
+            .mode-selector label,
+            select {
+                font-size: 0.98rem;
+            }
+
+            .mode-selector label {
+                font-size: 1.08rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Discrete Choice Model: Programme Selection</h2>
+
+    <div class="mode-selector">
+        <div class="mode-selector-content">
+            <label for="modeSelect">Choose Input Method:</label>
+            <select id="modeSelect" onchange="applyMode()">
+                <option value="1">1. Use Aiman's Input factors and weights (Defaults)</option>
+                <option value="2">2. Adjust custom input factors (Maintain Aiman's weights)</option>
+                <option value="3">3. Use Aiman's input factors (Adjust custom weights)</option>
+                <option value="4">4. Custom input for BOTH factors and weights</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="panel">
+            <h3>Factor Ratings (1-5)</h3>
+            <div id="ratingsTableContainer"></div>
+            
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+            
+            <h3>Factor Weights</h3>
+            <div id="slidersContainer"></div>
+        </div>
+
+        <div class="panel chart-panel">
+            <h3>Predicted Choice Probabilities</h3>
+            <canvas id="probabilityChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Define Data & Defaults ---
+        const programmes = ['Pure Sciences', 'Applied Sciences', 'Engineering', 'Accounting', 'Management', 'Arts'];
+        const factors = ['Interest', 'Exam', 'Career', 'Location', 'Fees', 'Explore'];
+        
+        const defaultRatings = [
+            [5, 5, 3, 3, 4, 2],
+            [4, 5, 4, 3, 3, 3],
+            [4, 5, 5, 2, 5, 2],
+            [3, 4, 4, 4, 4, 2],
+            [3, 3, 3, 5, 3, 3],
+            [2, 3, 2, 4, 2, 4]
+        ];
+        
+        const defaultWeights = [0.30, 0.20, 0.25, 0.10, 0.10, 0.05];
+        
+        let myChart;
+
+        // --- 2. Initialize the UI ---
+        function initializeUI() {
+            // Generate HTML Table for Ratings dynamically
+            let tableHTML = '<table><tr><th>Programme</th>';
+            factors.forEach(f => tableHTML += `<th>${f}</th>`);
+            tableHTML += '</tr>';
+            
+            programmes.forEach((prog, i) => {
+                tableHTML += `<tr><td>${prog}</td>`;
+                factors.forEach((fact, j) => {
+                    tableHTML += `<td><input type="number" min="1" max="5" id="r_${i}_${j}" oninput="updateChart()"></td>`;
+                });
+                tableHTML += '</tr>';
+            });
+            tableHTML += '</table>';
+            document.getElementById('ratingsTableContainer').innerHTML = tableHTML;
+
+            // Generate HTML Sliders for Weights dynamically
+            let slidersHTML = '';
+            factors.forEach((fact, i) => {
+                slidersHTML += `
+                    <div class="slider-group">
+                        <label>${fact} <span id="val_w_${i}">0.00</span></label>
+                        <input type="range" id="w_${i}" min="0" max="1" step="0.05" oninput="updateChart()">
+                    </div>`;
+            });
+            document.getElementById('slidersContainer').innerHTML = slidersHTML;
+
+            // Set initial mode to Option 1
+            applyMode();
+        }
+
+        // --- 3. Handle Mode Selection (The Logic you requested) ---
+        function applyMode() {
+            const mode = document.getElementById('modeSelect').value;
+            
+            const lockFactors = (mode === "1" || mode === "3");
+            const lockWeights = (mode === "1" || mode === "2");
+
+            // Apply to Factor Ratings
+            programmes.forEach((_, i) => {
+                factors.forEach((_, j) => {
+                    let inputCell = document.getElementById(`r_${i}_${j}`);
+                    if (lockFactors) {
+                        inputCell.value = defaultRatings[i][j]; // Reset to Aiman's
+                        inputCell.disabled = true;              // Lock it
+                    } else {
+                        inputCell.disabled = false;             // Unlock for custom input
+                    }
+                });
+            });
+
+            // Apply to Weights
+            factors.forEach((_, i) => {
+                let slider = document.getElementById(`w_${i}`);
+                if (lockWeights) {
+                    slider.value = defaultWeights[i]; // Reset to Aiman's
+                    slider.disabled = true;           // Lock it
+                } else {
+                    slider.disabled = false;          // Unlock for custom input
+                }
+            });
+
+            // Recalculate and update chart based on new locks/resets
+            updateChart();
+        }
+
+        // --- 4. Mathematical Computations & Charting ---
+        function updateChart() {
+            // Read Weights from UI
+            let weights = [];
+            factors.forEach((_, i) => {
+                let val = parseFloat(document.getElementById(`w_${i}`).value);
+                weights.push(val);
+                document.getElementById(`val_w_${i}`).innerText = val.toFixed(2); // Update text label
+            });
+
+            // Normalize weights (sum to 1)
+            let sumWeights = weights.reduce((a, b) => a + b, 0);
+            if (sumWeights === 0) sumWeights = 1; // Prevent division by zero
+            weights = weights.map(w => w / sumWeights);
+
+            // Read Ratings from UI and Calculate Utilities (U = sum(weight * rating))
+            let utilities = [];
+            programmes.forEach((_, i) => {
+                let u = 0;
+                factors.forEach((_, j) => {
+                    let rating = parseFloat(document.getElementById(`r_${i}_${j}`).value) || 0;
+                    u += rating * weights[j];
+                });
+                utilities.push(u);
+            });
+
+            // Calculate Probabilities (Multinomial Logit)
+            let expUtilities = utilities.map(Math.exp);
+            let sumExpUtilities = expUtilities.reduce((a, b) => a + b, 0);
+            let probabilities = expUtilities.map(expU => (expU / sumExpUtilities) * 100);
+
+            // Render Chart
+            const ctx = document.getElementById('probabilityChart').getContext('2d');
+            if (myChart) {
+                myChart.data.datasets[0].data = probabilities;
+                myChart.update();
+            } else {
+                myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: programmes,
+                        datasets: [{
+                            label: 'Probability of Choosing (%)',
+                            data: probabilities,
+                            backgroundColor: '#00d4ff',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#fff',
+                                    font: { size: 13, weight: 'bold' }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    color: '#fff',
+                                    font: { size: 11 }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.24)',
+                                    lineWidth: 1.2
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: '#fff',
+                                    font: { size: 11 }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.18)',
+                                    lineWidth: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Start the application
+        window.onload = initializeUI;
+    </script>
+</body>
+</html>
